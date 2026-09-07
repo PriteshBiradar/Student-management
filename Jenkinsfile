@@ -1,129 +1,183 @@
-```groovy
+// pipeline {
+//     agent any
+
+//     options {
+//         timestamps()
+//         disableConcurrentBuilds()
+//         skipDefaultCheckout(true)
+//     }
+
+//     parameters {
+//         string(name: 'APP_SERVER_HOST', defaultValue: '', description: 'Application EC2 DNS name or IP', trim: true)
+//         string(name: 'APP_SERVER_USER', defaultValue: 'ubuntu', description: 'SSH user on the application EC2 instance', trim: true)
+//     }
+
+//     environment {
+//         APP_DIRECTORY = '/home/ubuntu/student-management'
+//         SSH_CREDENTIALS_ID = 'student-management-app-ssh'
+//     }
+
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Build and Test') {
+//             steps {
+//                 sh 'mvn -B clean verify'
+//             }
+//         }
+
+//         stage('Archive Artifact') {
+//             steps {
+//                 archiveArtifacts artifacts: 'target/student-management.jar', fingerprint: true
+//             }
+//         }
+
+//         stage('Deploy to Application Server') {
+//             steps {
+//                 script {
+//                     if (!params.APP_SERVER_HOST?.trim()) {
+//                         error('APP_SERVER_HOST must be provided for deployment')
+//                     }
+//                 }
+
+//                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+//                     sh '''
+//                         set -eu
+//                         remote_jar="/tmp/student-management-${BUILD_NUMBER}.jar"
+//                         ssh_options="-o BatchMode=yes -o StrictHostKeyChecking=no"
+
+//                         scp ${ssh_options} target/student-management.jar \
+//                             "${APP_SERVER_USER}@${APP_SERVER_HOST}:${remote_jar}"
+
+//                         ssh ${ssh_options} "${APP_SERVER_USER}@${APP_SERVER_HOST}" \
+//                             "sudo install -o ubuntu -g ubuntu -m 0644 '${remote_jar}' '${APP_DIRECTORY}/student-management.jar' && \
+//                              rm -f '${remote_jar}' && \
+//                              sudo systemctl restart student-management && \
+//                              sudo systemctl is-active --quiet student-management"
+//                     '''
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo 'Student Management build and deployment completed successfully.'
+//         }
+//         failure {
+//             echo 'Student Management pipeline failed.'
+//         }
+//     }
+// }
 pipeline {
+agent any
 
-    agent any
+options {
+    timestamps()
+    disableConcurrentBuilds()
+    skipDefaultCheckout(true)
+}
 
-    environment {
-        DOCKER_IMAGE = "mangeshc225/student-management"
-        DOCKER_TAG   = "${BUILD_NUMBER}"
-    }
+parameters {
+    string(
+        name: 'APP_SERVER_HOST',
+        defaultValue: '',
+        description: 'Application EC2 private IP or DNS name',
+        trim: true
+    )
 
-    stages {
+    string(
+        name: 'APP_SERVER_USER',
+        defaultValue: 'ubuntu',
+        description: 'SSH user on the application EC2 instance',
+        trim: true
+    )
+}
 
-        stage('Checkout') {
-            steps {
-                echo '📥 Checking out source code...'
-                checkout scm
-            }
-        }
+environment {
+    APP_DIRECTORY = '/opt/student-management'
+    SSH_CREDENTIALS_ID = 'student-management-app-ssh'
+}
 
-        stage('Build with Maven') {
-            steps {
-                echo '🔨 Building Spring Boot application...'
+stages {
 
-                sh '''
-                    chmod +x mvnw || true
-                    mvn clean package -DskipTests
-                '''
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                echo '🐳 Building Docker image...'
-
-                sh '''
-                    docker build \
-                    -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                    -t ${DOCKER_IMAGE}:latest .
-                '''
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                echo '🔐 Logging in to Docker Hub...'
-
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-
-                    sh '''
-                        echo "$DOCKER_PASSWORD" | docker login \
-                        -u "$DOCKER_USERNAME" \
-                        --password-stdin
-                    '''
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                echo '📤 Pushing Docker image to Docker Hub...'
-
-                sh '''
-                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    docker push ${DOCKER_IMAGE}:latest
-                '''
-            }
-        }
-
-        stage('Deploy to EC2') {
-            steps {
-                echo '🚀 Deploying application to EC2...'
-
-                sshagent(['ec2-ssh-key']) {
-
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no \
-                        ${EC2_USER}@${EC2_HOST} << EOF
-
-                            echo "Pulling latest Docker image..."
-
-                            docker pull ${DOCKER_IMAGE}:latest
-
-                            echo "Stopping old container..."
-
-                            docker stop student-management || true
-                            docker rm student-management || true
-
-                            echo "Starting new container..."
-
-                            docker run -d \
-                                --name student-management \
-                                --restart unless-stopped \
-                                -p 8080:8080 \
-                                ${DOCKER_IMAGE}:latest
-
-                            echo "Deployment completed!"
-
-                            docker ps
-
-                        EOF
-                    '''
-                }
-            }
+    stage('Checkout') {
+        steps {
+            checkout scm
         }
     }
 
-    post {
-
-        success {
-            echo '✅ CI/CD Pipeline completed successfully!'
-            echo "Docker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+    stage('Build and Test') {
+        steps {
+            sh 'mvn -B clean verify'
         }
+    }
 
-        failure {
-            echo '❌ CI/CD Pipeline failed!'
+    stage('Archive Artifact') {
+        steps {
+            archiveArtifacts(
+                artifacts: 'target/*.jar',
+                fingerprint: true
+            )
         }
+    }
 
-        always {
-            echo "🏁 Jenkins Build #${BUILD_NUMBER} finished."
+    stage('Deploy to Application Server') {
+        steps {
+
+            script {
+                if (!params.APP_SERVER_HOST?.trim()) {
+                    error('APP_SERVER_HOST must be provided for deployment')
+                }
+            }
+
+            sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+
+                sh '''
+                    set -eu
+
+                    JAR_FILE=$(find target -maxdepth 1 -type f -name "*.jar" ! -name "*-plain.jar" | head -n 1)
+
+                    if [ -z "$JAR_FILE" ]; then
+                        echo "ERROR: Spring Boot JAR not found."
+                        exit 1
+                    fi
+
+                    echo "Deploying: $JAR_FILE"
+
+                    remote_jar="/tmp/student-management-${BUILD_NUMBER}.jar"
+
+                    ssh_options="-o BatchMode=yes -o StrictHostKeyChecking=no"
+
+                    scp ${ssh_options} "$JAR_FILE" \
+                        "${APP_SERVER_USER}@${APP_SERVER_HOST}:${remote_jar}"
+
+                    ssh ${ssh_options} \
+                        "${APP_SERVER_USER}@${APP_SERVER_HOST}" \
+                        "sudo install -o ubuntu -g ubuntu -m 0644 '${remote_jar}' '${APP_DIRECTORY}/student-management.jar' && \
+                         rm -f '${remote_jar}' && \
+                         sudo systemctl restart student-management && \
+                         sudo systemctl is-active --quiet student-management"
+
+                    echo "Deployment successful."
+                '''
+            }
         }
     }
 }
-```
+
+post {
+    success {
+        echo 'Student Management build and deployment completed successfully.'
+    }
+
+    failure {
+        echo 'Student Management pipeline failed.'
+    }
+}
+
+}
