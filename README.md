@@ -1,13 +1,16 @@
 # 🎓 Student Management System
 
-A full-stack **Student Management System** built with **Spring Boot, Thymeleaf, MySQL, Maven, AWS EC2, Amazon RDS, and Jenkins CI/CD**.
+> A full-stack Student Management System built with **Spring Boot, Thymeleaf, MySQL, Jenkins, and AWS**, with an automated CI/CD pipeline for building, testing, and deploying the application to an AWS EC2 server.
 
-This project demonstrates not only application development, but also how to **build, test, package, and deploy a Spring Boot application to AWS automatically using Jenkins**.
-
-> 🚀 **CI/CD:** GitHub → Jenkins → Application EC2 → RDS MySQL  
-> ☁️ **Cloud:** AWS  
-> 🔄 **Deployment:** Jenkins + SSH/SCP + systemd  
-> 🐳 **Docker:** Not used in the current deployment
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?logo=springboot)
+![MySQL](https://img.shields.io/badge/MySQL-8-blue?logo=mysql)
+![Maven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins)
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazonaws)
+![EC2](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonec2)
+![RDS](https://img.shields.io/badge/AWS-RDS-527FFF?logo=amazonrds)
+![Linux](https://img.shields.io/badge/Linux-Ubuntu-E95420?logo=ubuntu)
 
 ---
 
@@ -85,25 +88,41 @@ The Jenkins-to-Application Server deployment uses SSH/SCP, while GitHub source c
 
 ---
 
-# 🎥 Project Demo
+# 🛠️ Technology Stack
 
-## ▶️ Application Demo
+### Application
 
-# 🎥 Project Demo
+- Java 21
+- Spring Boot 3
+- Spring MVC
+- Spring Security
+- Thymeleaf
+- Bootstrap
+- MySQL
+- REST APIs
+- Maven
 
-## ▶️ Application Demo
+### DevOps & Cloud
 
-[![Application Demo](docs/screenshots/application-demo-thumbnail.png)](docs/videos/application-demo.mp4)
+- AWS EC2
+- Amazon RDS
+- AWS VPC
+- Jenkins
+- Git
+- GitHub
+- SSH
+- SCP
+- Linux / Ubuntu
+- systemd
+- Nginx
 
-> Click the preview above to watch the full application demo.
+---
 
+# 🔄 CI/CD Pipeline
 
+The project implements a Jenkins-based CI/CD pipeline.
 
-The demo shows the Student Management application running and demonstrates the main application workflow.
-
-### 🎬 Additional Demo
-
-You can also find the Jenkins CI/CD demonstration in:
+### Pipeline Flow
 
 ```text
 docs/videos/jenkins-cicd-demo.mp4
@@ -131,77 +150,28 @@ docs/videos/jenkins-cicd-demo.mp4
 
 ---
 
-# 🚀 CI/CD Pipeline
+# 🎥 Project Demo
 
-The project uses **Jenkins Pipeline** to automate the application build and deployment process.
+## 🎥 Application Demo
 
-### Pipeline Flow
+[![Student Management System Demo](https://img.youtube.com/vi/Frmffy9lOsI/maxresdefault.jpg)](https://youtu.be/Frmffy9lOsI)
 
-```text
-                    GitHub
-                       |
-                       v
-                  ┌─────────┐
-                  │ Checkout│
-                  └────┬────┘
-                       |
-                       v
-              ┌────────────────┐
-              │ Maven Build &  │
-              │     Test       │
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ Create Spring  │
-              │  Boot JAR      │
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ Archive JAR    │
-              │   Artifact     │
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ SSH / SCP      │
-              │ Deployment     │
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ Install JAR on │
-              │ Application EC2│
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ Restart        │
-              │ systemd        │
-              └───────┬────────┘
-                      |
-                      v
-              ┌────────────────┐
-              │ Verify Service │
-              │    Active      │
-              └────────────────┘
-```
+Click the image above to view the complete application demo.
 
-The implemented Jenkins stages are:
+The application demo demonstrates:
 
-| Stage | Purpose |
-|---|---|
-| Checkout | Pull source code from GitHub |
-| Build and Test | Run `mvn -B clean verify` |
-| Archive Artifact | Store the generated JAR in Jenkins |
-| Deploy | Transfer JAR to Application EC2 |
-| Restart | Restart `student-management.service` |
-| Verify | Confirm the service is active |
+- Login
+- Dashboard
+- Student management
+- CRUD operations
+- Search
+- Application navigation
 
 ---
 
-# 🔄 Jenkins Deployment
+
+
+# ☁️ AWS Deployment
 
 The Jenkins pipeline uses an SSH credential:
 
@@ -214,35 +184,41 @@ The application server receives the generated JAR through SCP.
 The deployment location is:
 
 ```text
-/opt/student-management/student-management.jar
+AWS VPC
+│
+├── Public Subnet
+│   ├── Jenkins EC2
+│   └── Application EC2
+│
+└── Database Subnets
+    └── Amazon RDS MySQL
 ```
 
-After deployment, Jenkins executes:
+### Jenkins EC2
 
-```text
-sudo systemctl restart student-management
-```
+Jenkins runs on an AWS EC2 instance and is responsible for:
 
-and verifies that the service is active.
+- Pulling source code
+- Running Maven builds
+- Running tests
+- Creating the JAR
+- Deploying the application
+- Verifying deployment
 
----
+### Application EC2
 
-# ☁️ AWS Infrastructure
+The application server:
 
-The project uses the following AWS components:
+- Runs Ubuntu Linux
+- Runs Java 21
+- Hosts the Spring Boot JAR
+- Uses systemd for process management
+- Exposes the Spring Boot application on port `8080`
+- Connects to Amazon RDS through MySQL port `3306`
 
-| AWS Service | Purpose |
-|---|---|
-| Amazon VPC | Network environment |
-| Amazon EC2 | Jenkins server |
-| Amazon EC2 | Application server |
-| Amazon RDS | MySQL database |
-| Security Groups | Network access control |
-| Subnets | Network segmentation |
-| Route Tables | Network routing |
-| Internet Gateway | Internet connectivity |
+### Amazon RDS
 
-### Database Connectivity
+Amazon RDS MySQL provides the persistent database for the application.
 
 ```text
 Application EC2
@@ -333,33 +309,23 @@ sudo journalctl -u student-management -n 50 --no-pager
 
 ---
 
-# 🧰 Technology Stack
+# 🔌 REST API
 
-### Application
+The application provides REST endpoints for student management.
 
-- ☕ Java 21
-- 🌱 Spring Boot
-- 🎨 Thymeleaf
-- 🗄️ MySQL
-- 📦 Maven
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/students` | List students |
+| GET | `/api/students/{id}` | Get student |
+| POST | `/api/students` | Create student |
+| PUT | `/api/students/{id}` | Update student |
+| DELETE | `/api/students/{id}` | Delete student |
 
-### DevOps
+Example:
 
-- 🔄 Jenkins
-- 🔗 Git
-- 🐙 GitHub
-- 🔐 SSH
-- 📡 SCP
-- ⚙️ systemd
-
-### AWS
-
-- ☁️ Amazon EC2
-- 🗄️ Amazon RDS for MySQL
-- 🌐 Amazon VPC
-- 🔐 Security Groups
-- 🛣️ Route Tables
-- 🌍 Internet Gateway
+```text
+GET /api/students
+```
 
 ---
 
@@ -398,67 +364,19 @@ Student-management/
 
 ---
 
-# 💻 Run Locally
+# 🔐 Security Considerations
 
-### 1. Clone the repository
+The project follows several basic security practices:
 
-```bash
-git clone https://github.com/PriteshBiradar/Student-management.git
-```
+- 🔑 SSH access should be restricted to trusted IP addresses
+- 🛡️ AWS Security Groups control inbound traffic
+- 🔒 Database access is restricted to the application server
+- 🚫 Database should not be publicly accessible
+- 🔐 Production credentials should be stored outside source code
+- 🔄 SSH keys should be managed securely
+- 🗝️ Database credentials should be rotated periodically
 
-```bash
-cd Student-management
-```
-
-### 2. Build the application
-
-```bash
-mvn clean verify
-```
-
-### 3. Run the application
-
-```bash
-mvn spring-boot:run
-```
-
-The application runs on:
-
-```text
-http://localhost:8080
-```
-
-For a local MySQL setup, configure the required database environment variables before starting the application.
-
----
-
-# 🧪 Testing
-
-The Jenkins pipeline runs:
-
-```bash
-mvn -B clean verify
-```
-
-This allows the project to compile, execute tests, and verify the application before deployment.
-
-Only after the build/test stage succeeds does Jenkins continue with artifact archiving and deployment.
-
----
-
-# 🔐 Security Practices
-
-This project demonstrates several basic security practices:
-
-- Database is hosted separately using Amazon RDS.
-- RDS is not intended to be publicly exposed.
-- MySQL access is restricted through Security Groups.
-- SSH deployment uses a dedicated Jenkins credential.
-- Database configuration is supplied through environment variables.
-- Private SSH keys are not stored in the repository.
-- Sensitive values should not be committed to Git.
-
-> ⚠️ This is a learning/project environment. Production deployments should further restrict SSH and application access, use private networking where appropriate, and use services such as AWS Systems Manager and Secrets Manager/Parameter Store.
+For production environments, AWS Secrets Manager or SSM Parameter Store can be used for centralized secret management.
 
 ---
 
@@ -493,70 +411,67 @@ Expected application response may redirect to the login page.
 ### Test RDS connectivity
 
 ```bash
-mysql -h <RDS_ENDPOINT> -P 3306 -u <RDS_USER> -p
+nc -zv <RDS-ENDPOINT> 3306
 ```
 
-The deployment setup specifically uses these checks for verifying the application, port `8080`, and EC2-to-RDS connectivity.
-
 ---
 
-# 🎯 Key DevOps Concepts Demonstrated
+# 🎯 What I Learned From This Project
 
-This project provided hands-on experience with:
+This project helped me gain practical experience in:
 
-- AWS EC2 administration
-- Amazon RDS
-- VPC networking
-- Security Groups
-- Linux administration
-- SSH authentication
-- Jenkins Pipeline
-- CI/CD
-- Maven builds
-- Artifact archiving
+- AWS EC2 provisioning and configuration
+- Amazon RDS MySQL
+- VPC and Security Groups
+- Linux server administration
+- Java application deployment
+- Maven build automation
+- Jenkins CI/CD
+- Git and GitHub
+- SSH key-based authentication
 - SCP-based deployment
-- systemd services
-- Environment variables
-- Application-to-database connectivity
-- Git/GitHub workflow
-- Automated deployment
+- systemd service management
+- Application troubleshooting
+- Database connectivity troubleshooting
+- CI/CD pipeline debugging
 
 ---
 
-# 🧠 What I Learned
+# 🚀 Future Improvements
 
-Through this project, I gained practical experience in connecting **application development with cloud infrastructure and DevOps automation**.
+Possible improvements for the project:
 
-The major learning areas were:
-
-- Deploying Spring Boot applications on AWS EC2
-- Connecting an EC2 application to Amazon RDS MySQL
-- Configuring Linux systemd services
-- Building applications with Maven
-- Creating Jenkins pipelines
-- Using SSH credentials securely in Jenkins
-- Automating JAR deployment using SCP
-- Troubleshooting EC2-to-RDS connectivity
-- Managing application configuration using environment variables
-- Understanding a basic end-to-end CI/CD workflow
+- [ ] HTTPS using SSL/TLS
+- [ ] AWS Application Load Balancer
+- [ ] Auto Scaling
+- [ ] CloudWatch monitoring
+- [ ] AWS Secrets Manager
+- [ ] Blue/Green deployment
+- [ ] Automated rollback
+- [ ] Infrastructure as Code with Terraform
+- [ ] Jenkins webhook-based automatic deployment
+- [ ] Automated integration testing
 
 ---
 
-# 🔮 Future Improvements
+# 📊 Project Highlights
 
-Possible improvements for a more production-oriented architecture:
-
-- Add an Application Load Balancer
-- Move the application server into a private subnet
-- Add Auto Scaling
-- Use AWS Systems Manager instead of direct SSH where appropriate
-- Store secrets in AWS Secrets Manager or Parameter Store
-- Add CloudWatch monitoring and alarms
-- Add automated rollback
-- Add deployment approval stages
-- Add blue/green or rolling deployments
-- Add infrastructure provisioning through Terraform
-- Add separate development and production environments
+```text
+┌──────────────────────────────────────────┐
+│        STUDENT MANAGEMENT SYSTEM         │
+├──────────────────────────────────────────┤
+│                                          │
+│  ☁️ AWS Deployment                       │
+│  🔄 Jenkins CI/CD                        │
+│  ☕ Spring Boot                           │
+│  🗄️ MySQL RDS                            │
+│  🐧 Linux / Ubuntu                       │
+│  🔐 SSH/SCP Deployment                   │
+│  ⚙️ systemd                              │
+│  📦 Maven                                │
+│                                          │
+└──────────────────────────────────────────┘
+```
 
 ---
 
@@ -564,33 +479,23 @@ Possible improvements for a more production-oriented architecture:
 
 ## Pritesh Biradar
 
-**AWS / DevOps Learner**
+AWS / DevOps enthusiast focused on building practical cloud infrastructure, CI/CD pipelines, and production-style deployments.
 
-Interested in:
+### GitHub
 
-- ☁️ AWS Administration
-- 🔧 DevOps
-- 🔄 CI/CD
-- 🏗️ Infrastructure as Code
-- 🌱 Jenkins
-- 🐧 Linux
-- ☕ Java / Spring Boot
-- 🗄️ Cloud Databases
+[![GitHub](https://img.shields.io/badge/GitHub-PriteshBiradar-black?logo=github)](https://github.com/PriteshBiradar)
 
-### 🌐 Portfolio
+### Portfolio
 
-**[Pritesh Biradar Portfolio](https://priteshbiradar.github.io/Pritesh_Biradar.github.io/)**
-
-### 📦 Repository
-
-**[Student Management System](https://github.com/PriteshBiradar/Student-management)**
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-blue?logo=googlechrome)](https://priteshbiradar.github.io/Pritesh_Biradar.github.io/)
 
 ---
 
-<p align="center">
+## ⭐ If you found this project useful
 
-### 🚀 Built with Spring Boot + AWS + Jenkins
+Feel free to ⭐ the repository and explore the implementation.
 
-**Application Development • Cloud • CI/CD • DevOps**
+---
 
-</p>
+### 🚀 Learning • Building • Automating • Growing
+**Built by Pritesh Biradar**
