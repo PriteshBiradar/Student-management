@@ -227,9 +227,11 @@ sudo systemctl is-active --quiet student-management
 
 # 🎥 Project Demo
 
-## Application Demo
+## 🎥 Application Demo
 
-▶️ **[Watch Application Demo](docs/videos/application-demo.mp4)**
+[![Watch Application Demo](docs/screenshots/application-demo-thumbnail.png)](docs/videos/application-demo.mp4)
+
+Click the image above to view the complete application demo.
 
 The application demo demonstrates:
 
